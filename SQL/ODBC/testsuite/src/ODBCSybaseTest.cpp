@@ -348,54 +348,6 @@ void SybaseODBC::recreateLogTable()
 	catch (StatementException& se){ std::cout << se.toString() << std::endl; fail("recreateLogTable()"); }
 }
 
-void SybaseODBC::testStoredProcedureIQ()
-{
-	Poco::SQL::Statement select(session());
-
-	if (sybaseDriver().find("libdbodbc11") == std::string::npos)
-	{
-		std::cout << "Skipping testStoredProcedureIQ for driver = " << sybaseDriver() << std::endl;
-		return;
-	}
-
-	try
-	{
-		select << "DBA.TestProc11";
-		select.execute();
-
-		Poco::SQL::RecordSet rs(select);
-
-		std::queue< std::string > expected({ "aaa", "bbb", "ccc", "ddd" });
-		bool more = rs.moveFirst();
-		while (more)
-		{
-			if (expected.empty())
-				throw std::runtime_error("unexpected result from stored proc");
-			if (rs[0].isEmpty())
-				throw std::runtime_error("unexpected null value returned from stored proc");
-
-			Poco::Nullable<std::string> name = rs[0].convert<std::string>();
-			if (expected.front() != name.value())
-				throw std::runtime_error("got: " + name.value() + "; expected: " + expected.front());
-
-			expected.pop();
-
-			more = rs.moveNext();
-		}
-
-		if (!expected.empty())
-			throw std::runtime_error("missing results from the stored proc");
-	}
-	catch(const Poco::SQL::ODBC::ODBCException& ex_)
-	{
-		std::cout << "caught Poco::SQL::ODBC::ODBCException:" << ex_.what() << std::endl << ex_.message() << std::endl << ex_.displayText() << std::endl;
-	}
-	catch (const std::exception& ex_)
-	{
-		std::cout << "caught:" << ex_.what() << std::endl;
-	}
-}
-
 void SybaseODBC::testStoredProcedure()
 {
 	const std::string nm(ExecUtil::stored_proc());
@@ -696,7 +648,6 @@ CppUnit::Test* SybaseODBC::suite()
 		CppUnit_addTest(pSuite, SybaseODBC, testInternalBulkExtraction);
 		CppUnit_addTest(pSuite, SybaseODBC, testInternalStorageType);
 		CppUnit_addTest(pSuite, SybaseODBC, testStoredProcedure);
-		CppUnit_addTest(pSuite, SybaseODBC, testStoredProcedureIQ);
 		CppUnit_addTest(pSuite, SybaseODBC, testStoredProcedureAny);
 		CppUnit_addTest(pSuite, SybaseODBC, testStoredProcedureDynamicAny);
 		CppUnit_addTest(pSuite, SybaseODBC, testNull);

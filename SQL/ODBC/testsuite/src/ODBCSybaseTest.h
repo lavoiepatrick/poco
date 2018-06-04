@@ -42,7 +42,6 @@ private:
 	void recreateMiscTable();
 	void recreateLogTable();
 	void testStoredProcedure();
-	void testStoredProcedureIQ();
 	void testStoredProcedureDynamicAny();
 	void testStoredProcedureAny();
 	void testTransaction();
